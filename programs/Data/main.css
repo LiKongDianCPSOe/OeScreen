@@ -1,0 +1,38 @@
+body {
+    text-align: center;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 22px;
+}
+
+#submit {
+    width: 80px;
+    height: 32px;
+}
+
+#logo {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 80px;
+    font-weight: 500;
+    line-height: 120px;
+    color: #303f52;
+}
+
+#version {
+    font-size: 35px;
+    margin: 6px;
+}
+
+input {
+    margin: 11px;
+    height: 27px;
+    width: 240px;
+}
+
+a:link {
+    text-decoration: none;
+    color: steelblue;
+}
+
+a:hover {
+    font-weight: 700;
+}
