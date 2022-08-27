@@ -1,3 +1,7 @@
+/* 作者：理空电CPSOe
+   许可证：MIT
+*/
+
 #include <Wire.h>
 
 #define SHT30_Adr 0x44
@@ -8,7 +12,7 @@ void setup()
 {
   Wire.begin(SDApin, SCLpin);
   Serial.begin(115200);
-  
+
   delay(100);
 }
 
@@ -16,12 +20,12 @@ void loop()
 {
   unsigned int SHT30_Data[6];
   Wire.beginTransmission(SHT30_Adr);
-  
+
   Wire.write(0x2C);
   Wire.write(0x06);
-  
+
   Wire.endTransmission();
-  
+
   delay(15);
 
   Wire.requestFrom(SHT30_Adr, 6);
@@ -41,11 +45,11 @@ void loop()
 
   float cTemp = ((((SHT30_Data[0] * 256.0) + SHT30_Data[1]) * 175) / 65535.0) - 45;
   float humidity = ((((SHT30_Data[3] * 256.0) + SHT30_Data[4]) * 100) / 65535.0);
-  
+
   Serial.print(humidity);
   Serial.println(" %RH");
   Serial.print(cTemp);
   Serial.println("°C");
-  
+
   delay(85);
 }
