@@ -8,15 +8,18 @@ TFT_eSPI tft = TFT_eSPI();
 
 void setup()
 {
+  int nameBlue = tft.color565(48, 64, 82);
   tft.init();
   tft.fillScreen(TFT_BLACK);
   tft.setRotation(0);
 
-  tft.setCursor(5, 5, 1);
-  int DarkBlue = tft.color565(48, 64, 82);
-  tft.setTextColor(DarkBlue);
-  tft.setTextSize(1);
+  tft.setCursor(0, 0, 1);
+  tft.setTextColor(TFT_WHITE);
+  tft.setTextSize(2);
   tft.drawString("OeScreen", 5, 5);
+  tft.setTextColor(nameBlue);
+  tft.drawString("LiKongDian", 5, 30);
+  tft.drawString("CPSOe", 5, 50);
 }
 
 void loop()
