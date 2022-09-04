@@ -1,5 +1,5 @@
 # OeScreen V1.1-1.0
-/bulid Files
+\bulid
 此文件夹包含编译所需文件：
     .\data          -包含需存储至Falsh文件系统的文件
     .\main.ino      -Arduino程序文件
