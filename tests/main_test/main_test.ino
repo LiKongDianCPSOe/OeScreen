@@ -18,7 +18,7 @@ V1.1-1.0
 #include <WiFiUdp.h>
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "time.edu.cn", 60 * 60 * 8, 100); // time.edu.cn为ntp服务器地址，60*60*8设置时区(中国东八时区，北京时间)，最后一个参数设置更新最小间隔
+NTPClient timeClient(ntpUDP, "ntp.ntsc.ac.cn", 60 * 60 * 8, 100); // ntp.ntsc.ac.cn为ntp服务器地址，60*60*8设置时区(中国东八时区，北京时间)，最后一个参数设置更新最小间隔
 TFT_eSPI tft = TFT_eSPI();
 
 #define SHT30Adr 0x44 //下拉为0x44，上拉为0x45
@@ -73,6 +73,7 @@ void setup()
     }
     tft.setTextColor(backgroundColor);
     tft.drawString("connecting", 5, 65);
+    tft.fillRect(5, 82, 123, 20, backgroundColor);
     Serial.print("connected\nto\n");
     Serial.println(ssid);
     timeClient.begin();
@@ -123,7 +124,7 @@ void loop()
     tft.drawString("%RH", 41, 72);
 
     //刷新时间显示(填充背景颜色)
-    tft.fillRect(5, 90, 82, 16, TFT_BLACK);
+    tft.fillRect(5, 90, 82, 16, backgroundColor);
 
     //转换时间数据为字符串，若小于10，则在前面添加“0”
     char charHours[4];
@@ -186,7 +187,7 @@ ICACHE_RAM_ATTR void TouchInterrupt() //触摸中断
     delayMicroseconds(100000);
     tft.fillCircle(119, 151, 4, TFT_WHITE);
     delayMicroseconds(110000);
-    tft.fillRect(115, 147, 10, 10, TFT_BLACK);
+    tft.fillRect(115, 147, 10, 10, backgroundColor);
     analogWrite(beepPin, 0);
 }
 
