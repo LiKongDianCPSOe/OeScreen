@@ -1,12 +1,31 @@
-body {
-    text-align: center;
+* {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     font-size: 22px;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    text-align: center;
+    background-color: rgb(218, 229, 237);
+}
+
+.alb {
+    position: fixed;
+    left: 20px;
+    bottom: 20px
+}
+
+.arb {
+    position: fixed;
+    right: 20px;
+    bottom: 20px
 }
 
 #submit {
     width: 80px;
     height: 32px;
+    font-size: 16px;
 }
 
 #logo {
@@ -14,25 +33,32 @@ body {
     font-size: 80px;
     font-weight: 500;
     line-height: 120px;
-    color: #303f52;
+    color: #303f52
 }
 
 #version {
     font-size: 35px;
-    margin: 6px;
+    margin: 6px
 }
 
 input {
     margin: 11px;
-    height: 27px;
+    height: 30px;
     width: 240px;
+    border-style: hidden;
+    border-radius: 6px;
+    background-color: white;
 }
 
 a:link {
     text-decoration: none;
-    color: steelblue;
+    color: rgb(70, 130, 180)
+}
+
+a:visited {
+    color: rgb(70, 130, 180)
 }
 
 a:hover {
-    font-weight: 700;
+    font-weight: 700
 }
