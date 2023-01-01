@@ -12,10 +12,7 @@ V1.1-1.0
 #include <Wire.h>
 #include <TFT_eSPI.h>
 #include <NTPClient.h>
-// change next line to use with another board/shield
 #include <ESP8266WiFi.h>
-//#include <WiFi.h> // for WiFi shield
-//#include <WiFi101.h> // for WiFi 101 shield or MKR1000
 #include <WiFiUdp.h>
 
 WiFiUDP ntpUDP;
@@ -28,8 +25,8 @@ TFT_eSPI tft = TFT_eSPI();
 #define beepPin 16  //蜂鸣器引脚
 //#define backgroundColor TFT_BLACK
 
-const char *ssid = "SSID";                        // wifi名称
-const char *password = "PASSWORD";            // wifi密码
+const char *ssid = "SSID";                       // wifi名称
+const char *password = "PASSWORD";               // wifi密码
 const int CPSOeColor = tft.color565(48, 64, 82); // CPSOe主题颜色 rgb(48,64,82)
 const int backgroundColor = tft.color565(212, 212, 212);
 
@@ -62,7 +59,6 @@ void setup()
     tft.init();
     tft.fillScreen(backgroundColor);
     tft.setRotation(3);
-    tft.setCursor(0, 0, 1);
     Serial.println("tftStart");
 
     //显示项目Logo
@@ -172,11 +168,11 @@ void showOeSLogo(int x, int y)
 }
 
 void LineLoad(bool loadDir, bool setCase)
-// loadDir设置进度条动画方向(1为进入，0为滚出)，setCase为是否设置边框，1设置，0不设置
+// loadDir设置加载条滚动方向(1为进入，0为滚出)，setCase为是否设置边框，1设置，0不设置
 {
     int LineColor;
 
-    if (setCase)
+    if (setCase) //绘制加载条边框
     {
         int color1 = tft.color565(180, 180, 180);    //外条颜色
         int colorCase = tft.color565(135, 135, 135); //外框颜色
@@ -189,18 +185,22 @@ void LineLoad(bool loadDir, bool setCase)
         tft.drawPixel(118, 82, backgroundColor);
     }
 
-    if (loadDir)
+    if (loadDir) //设置加载条滚动方向
     {
-        LineColor = tft.color565(186, 203, 221);
+        LineColor = tft.color565(186, 203, 221); //加载条为蓝色(滚入)
     }
     else
     {
-        LineColor = backgroundColor;
+        LineColor = backgroundColor; //加载条为背景色(滚出)
     }
-    // w74,h5
-    int rectWidth = 1;
-    int add = 0;
-    int rectX = 44;
+
+    // 加载条滚动部分宽74像素,高5像素
+    int rectWidth = 1; //每次所画矩形宽度
+    int add = 0;       //每次宽度加数(递加)
+    int rectX = 44;    //矩形左上顶点x坐标
+
+    /*加载条由左向右滚动,每次在原来矩形的基础上,增加宽度,在上一个矩形右侧绘制下一个矩形,
+      直至矩形宽度超出剩余空间，使最后一个矩形刚好填满剩余空间*/
     while (rectX <= 117)
     {
         if (rectX + rectWidth > 117)
