@@ -6,12 +6,15 @@
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
+  Serial.print("pin");
+  Serial.print(TouchPin);
+  Serial.print(':');
   Serial.println(digitalRead(TouchPin));
   delay(100);
 }
