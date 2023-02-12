@@ -21,9 +21,9 @@ NTPClient timeClient(ntpUDP, "ntp.ntsc.ac.cn", 60 * 60 * 8, 100);
 
 TFT_eSPI tft = TFT_eSPI();
 
-#define touchPin 12 //触摸芯片输出引脚
-#define beepPin 16  //蜂鸣器引脚
-//#define backgroundColor TFT_BLACK
+#define touchPin 12 // 触摸芯片输出引脚
+#define beepPin 16  // 蜂鸣器引脚
+#define backgroundColor TFT_WHITE
 
 const char *ssid = "SSID";                       // wifi名称
 const char *password = "PASSWORD";               // wifi密码
@@ -52,7 +52,7 @@ void LineLoad(bool loadDir, bool setCase);
 
 void setup()
 {
-    //通讯初始化
+    // 通讯初始化
     Serial.begin(115200);
 
     // tft屏幕初始化
@@ -61,15 +61,15 @@ void setup()
     tft.setRotation(3);
     Serial.println("tftStart");
 
-    //显示项目Logo
+    // 显示项目Logo
     showOeSLogo(31, 48);
     Serial.println("showLogo");
 
-    //触摸初始化 注意:由于触摸引脚使用硬件MISO(数据输入，本项目使用的tft屏幕没有MISO引脚),触摸引脚初始化放在tft.init()后,否则触摸引脚无法读取及中断
-    // pinMode(touchPin, INPUT);
-    // attachInterrupt(digitalPinToInterrupt(touchPin), TouchInterrupt, RISING); //设置中断
+    // 触摸初始化 注意:由于触摸引脚使用硬件MISO(数据输入，本项目使用的tft屏幕没有MISO引脚),触摸引脚初始化放在tft.init()后,否则触摸引脚无法读取及中断
+    //  pinMode(touchPin, INPUT);
+    //  attachInterrupt(digitalPinToInterrupt(touchPin), TouchInterrupt, RISING); //设置中断
 
-    //连接wifi
+    // 连接wifi
 
     LineLoad(1, 1);
 
@@ -89,15 +89,15 @@ void setup()
 
 void loop()
 {
-    //清屏
+    // 清屏
     tft.fillScreen(backgroundColor);
 
-    //获取时间
+    // 获取时间
     timeClient.update();
     unsigned long epochTime = timeClient.getEpochTime();
     struct tm *ptm = gmtime((time_t *)&epochTime);
 
-    //转换时间数据为字符串，若小于10，则在前面添加“0”
+    // 转换时间数据为字符串，若小于10，则在前面添加“0”
     char charHours[4];
     char charMinutes[4];
     char charSeconds[4];
@@ -172,10 +172,10 @@ void LineLoad(bool loadDir, bool setCase)
 {
     int LineColor;
 
-    if (setCase) //绘制加载条边框
+    if (setCase) // 绘制加载条边框
     {
-        int color1 = tft.color565(180, 180, 180);    //外条颜色
-        int colorCase = tft.color565(135, 135, 135); //外框颜色
+        int color1 = tft.color565(180, 180, 180);    // 外条颜色
+        int colorCase = tft.color565(135, 135, 135); // 外框颜色
         tft.drawFastHLine(45, 75, 72, color1);
         tft.drawFastHLine(45, 83, 72, color1);
         tft.drawRect(43, 76, 76, 7, colorCase);
@@ -185,19 +185,19 @@ void LineLoad(bool loadDir, bool setCase)
         tft.drawPixel(118, 82, backgroundColor);
     }
 
-    if (loadDir) //设置加载条滚动方向
+    if (loadDir) // 设置加载条滚动方向
     {
-        LineColor = tft.color565(186, 203, 221); //加载条为蓝色(滚入)
+        LineColor = tft.color565(186, 203, 221); // 加载条为蓝色(滚入)
     }
     else
     {
-        LineColor = backgroundColor; //加载条为背景色(滚出)
+        LineColor = backgroundColor; // 加载条为背景色(滚出)
     }
 
     // 加载条滚动部分宽74像素,高5像素
-    int rectWidth = 1; //每次所画矩形宽度
-    int add = 0;       //每次宽度加数(递加)
-    int rectX = 44;    //矩形左上顶点x坐标
+    int rectWidth = 1; // 每次所画矩形宽度
+    int add = 0;       // 每次宽度加数(递加)
+    int rectX = 44;    // 矩形左上顶点x坐标
 
     /*加载条由左向右滚动,每次在原来矩形的基础上,增加宽度,在上一个矩形右侧绘制下一个矩形,
       直至矩形宽度超出剩余空间，使最后一个矩形刚好填满剩余空间*/
