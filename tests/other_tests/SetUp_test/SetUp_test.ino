@@ -2,7 +2,7 @@
 V1.1-1.0
 作者：理空电CPSOe
 此程序为OeScreen开发板的冷启动(加载动画)测试程序
-将开发版连接电源后，将在屏幕上显示加载画面，同时连接wifi,连接wifi后在串口显示时间，日期
+将开发版连接电源后，将在屏幕上显示加载画面，同时连接wifi,连接wifi后在屏幕、串口显示时间，日期
 开源链接：https://gitee.com/CPSOe/OeScreen
 许可证：MIT
 */
@@ -16,14 +16,14 @@ V1.1-1.0
 #include <WiFiUdp.h>
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "ntp.ntsc.ac.cn", 60 * 60 * 8, 100);
-// ntp.ntsc.ac.cn为ntp服务器地址，60*60*8设置时区(中国东八时区，北京时间)，最后一个参数设置更新最小间隔
+NTPClient timeClient(ntpUDP, "ntp2.tencent.com", 60 * 60 * 8, 100);
+// ntp2.tencent.com为ntp服务器地址，60*60*8设置时区(中国东八时区，北京时间)，最后一个参数设置更新最小间隔
 
 TFT_eSPI tft = TFT_eSPI();
 
 #define touchPin 12 // 触摸芯片输出引脚
 #define beepPin 16  // 蜂鸣器引脚
-#define backgroundColor TFT_WHITE
+//#define backgroundColor TFT_BLACK
 
 const char *ssid = "SSID";                       // wifi名称
 const char *password = "PASSWORD";               // wifi密码
@@ -45,7 +45,7 @@ const unsigned char OeScreenLogo[] PROGMEM = {
     0xC0, 0xE3, 0x87, 0x1C, 0x70, 0x70, 0x1F, 0xE0, 0x7F, 0x83, 0xFE, 0x0F, 0xF0, 0xC0, 0xFF, 0x07,
     0xF8, 0x70, 0x70, 0x0F, 0xC0, 0x1F, 0x00, 0xF8, 0x03, 0xE0, 0xC0, 0x3E, 0x01, 0xF0, 0x70, 0x70}; // OeScreen标志
 
-// ICACHE_RAM_ATTR void TouchInterrupt(); //触摸中断函数
+IRAM_ATTR void TouchInterrupt(); //触摸中断函数
 
 void showOeSLogo(int x, int y);
 void LineLoad(bool loadDir, bool setCase);
@@ -66,8 +66,8 @@ void setup()
     Serial.println("showLogo");
 
     // 触摸初始化 注意:由于触摸引脚使用硬件MISO(数据输入，本项目使用的tft屏幕没有MISO引脚),触摸引脚初始化放在tft.init()后,否则触摸引脚无法读取及中断
-    //  pinMode(touchPin, INPUT);
-    //  attachInterrupt(digitalPinToInterrupt(touchPin), TouchInterrupt, RISING); //设置中断
+    pinMode(touchPin, INPUT);
+    attachInterrupt(digitalPinToInterrupt(touchPin), TouchInterrupt, RISING); //设置中断
 
     // 连接wifi
 
@@ -139,15 +139,15 @@ void loop()
     }
 
     // tft屏幕显示时间
-    /*
-    tft.setTextColor(TFT_WHITE);
+    
+    tft.setTextColor(TFT_BLACK);
     tft.setTextSize(2);
-    tft.drawString(strHours, 5, 90);
-    tft.drawString(":", 26, 90);
-    tft.drawString(strMinutes, 35, 90);
-    tft.drawString(":", 56, 90);
-    tft.drawString(strSeconds, 65, 90);
-    */
+    tft.drawString(strHours, 5, 5);
+    tft.drawString(":", 26, 5);
+    tft.drawString(strMinutes, 35, 5);
+    tft.drawString(":", 56, 5);
+    tft.drawString(strSeconds, 65, 5);
+    
     Serial.print(strHours);
     Serial.print(':');
     Serial.print(strMinutes);
@@ -158,13 +158,7 @@ void loop()
 
 void showOeSLogo(int x, int y)
 {
-    unsigned char *bufLogo = new unsigned char[210];
-    if (bufLogo)
-    {
-        memcpy_P(bufLogo, OeScreenLogo, 210);
-        tft.drawBitmap(x, y, bufLogo, 100, 16, CPSOeColor, backgroundColor);
-    }
-    delete bufLogo;
+    tft.drawBitmap(x, y, OeScreenLogo, 100, 16, CPSOeColor, backgroundColor);
 }
 
 void LineLoad(bool loadDir, bool setCase)
@@ -217,6 +211,10 @@ void LineLoad(bool loadDir, bool setCase)
     }
 }
 
-// ICACHE_RAM_ATTR void TouchInterrupt() //触摸中断
-//{
-// }
+IRAM_ATTR void TouchInterrupt() //触摸中断
+{
+    analogWrite(beepPin,511);
+    analogWriteFreq(440);
+    delay(200);
+    analogWrite(beepPin,0);
+}

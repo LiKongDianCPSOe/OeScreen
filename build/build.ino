@@ -16,13 +16,13 @@ void setup()
 
 void loop()
 {
-    if (nowPage == 1)
+    if (nowPage == 1)//主页面
     {
         OeS_01_Main(0); // 初始化
 
         while (nowPage == 1)
         {
-            OeS_01_Main(2); // 更新气温、湿度
+            OeS_01_Main(2); // 更新气温
             OeS_01_Main(1); // 更新时间
 
             int readDelayTime = 0; // 按下时间计数

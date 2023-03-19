@@ -11,7 +11,7 @@ void setup()
   int nameBlue = tft.color565(48, 64, 82);
   tft.init();
   tft.fillScreen(TFT_BLACK);
-  tft.setRotation(0);
+  tft.setRotation(1);
 
   tft.setCursor(0, 0, 1);
   tft.setTextColor(TFT_WHITE);

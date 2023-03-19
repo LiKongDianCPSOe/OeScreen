@@ -7,7 +7,7 @@ LICENSE:MIT
 #include "bitmaps.h"
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, NTPADRESS, 60 * 60 * TIMEAREA, 1000 * 40);
+NTPClient timeClient(ntpUDP, NTPADRESS);
 TFT_eSPI tft = TFT_eSPI();
 
 const int CPSOeColor = tft.color565(48, 64, 82);         // CPSOe主题颜色 rgb(48,64,82)
@@ -18,7 +18,6 @@ const int darkGrey = tft.color565(135, 135, 135);        // 深灰rgb (135，135
 const int lightBlue = tft.color565(186, 203, 221);       // 浅蓝rgb (186,203,221)
 const int orangeYellow = tft.color565(226, 186, 116);    // 橙黄rgb (226,186,116)
 
-float boardTH[2] = {0.0, 0.0};               // 板上温度,湿度
 int int_nowTime[6] = {1970, 10, 1, 0, 0, 0}; // 年,月,日,小时,分钟,星期
 char weatherText[7] = "404";                 // 天气现象文字
 char weatherTemp[3] = "0";                   // 室外气温
@@ -209,33 +208,6 @@ void OeS_intToChars(int src, char *arryPointer)
     }
 }
 
-void OeS_getBoradTH()
-{
-    unsigned int SHT30_Data[6];
-    Wire.beginTransmission(SHT30_Adr);
-    Wire.write(0x2C);
-    Wire.write(0x06);
-    Wire.endTransmission();
-    delay(15);
-    Wire.requestFrom(SHT30_Adr, 6);
-
-    // 读取6字节的数据
-    // 这六个字节分别为：温度8位高数据，温度8位低数据，温度8位CRC校验数据
-    //                湿度8位高数据，湿度8位低数据，湿度8位CRC校验数据
-    if (Wire.available() == 6)
-    {
-        SHT30_Data[0] = Wire.read();
-        SHT30_Data[1] = Wire.read();
-        SHT30_Data[2] = Wire.read();
-        SHT30_Data[3] = Wire.read();
-        SHT30_Data[4] = Wire.read();
-        SHT30_Data[5] = Wire.read();
-    }
-
-    boardTH[0] = ((((SHT30_Data[0] * 256.0) + SHT30_Data[1]) * 175) / 65535.0) - 45; // 更改温度数据
-    boardTH[1] = ((((SHT30_Data[3] * 256.0) + SHT30_Data[4]) * 100) / 65535.0);      // 更改湿度数据
-}
-
 bool OeS_getWeather()
 {
     // 创建TCP连接
@@ -249,8 +221,8 @@ bool OeS_getWeather()
                  "/v3/weather/now.json?key=" + WEATHERKEY + "&location=" + WEATHERLOCATION + "&language=zh-Hans&unit=c" +
                  " HTTP/1.1\r\n" + "Host: " + WEATHERHOST + "\r\n" + "Connection: close\r\n\r\n");
     delay(50);
-    // 定义answer变量用来存放请求网络服务器后返回的数据
-    String answer;
+
+    String answer; // 请求网络服务器后返回的数据
     while (client.available())
     {
         String line = client.readStringUntil('\r');
@@ -274,7 +246,7 @@ bool OeS_getWeather()
 
     StaticJsonDocument<512> doc;
 
-    DeserializationError error = deserializeJson(doc, jsonAnswer);
+    deserializeJson(doc, jsonAnswer);
 
     JsonObject results_0 = doc["results"][0];
 
@@ -286,6 +258,8 @@ bool OeS_getWeather()
     strcpy(weatherText, results_0_now_text);
     strcpy(weatherTemp, results_0_now_temperature);
     weatherCode = atoi(results_0_now_code);
+
+    return true;
 }
 
 void OeS_drawWeatherIcon(int x, int y, int color)
@@ -411,56 +385,28 @@ void OeS_drawWeatherIcon(int x, int y, int color)
 
 void OeS_drawTemp(bool type, int x, int y, int numColor, int puncColor)
 {
-    float tempFloat;
-    char tempC[5]; // 存储转换后的字符串
-    if (type)
+    char tempC[5];                                  // 存储转换后的字符串
+    tft.drawRect(x, y - 1, 13, 9, backgroundColor); // 清屏
+    int charsX = x;                                 // 绘制字符串起始横坐标
+    strcpy(tempC, weatherTemp);
+    if (weatherTemp[0] == '-') // 如果温度为负数
     {
-        tft.drawRect(x, y, 13, 9, backgroundColor); // 清屏
-        int charsX = x;
-        strcpy(tempC, weatherTemp);
-        if (weatherTemp[0] == '-')
-        {
-            charsX -= 4;
-        }
-        OeS_drawChars(charsX, y, tempC, 1, numColor);
+        charsX -= 4; // 将字符串向前移4个像素(带负号字符串宽度加4像素)
     }
-    else
+    OeS_drawChars(charsX, y, tempC, 1, numColor); // 绘制字符串
+    if (type)                                     // 如果符号类型为真
     {
-        tft.drawRect(x - 4, y - 1, 26, 9, backgroundColor); // 清屏
-        tempFloat = boardTH[0];
-        if (tempFloat >= 0) // 如果温度为非负
-        {
-            dtostrf(tempFloat, 2, 1, tempC);
-        }
-        else // 如果温度为负
-        {
-            float posTemp = -tempFloat;
-            dtostrf(posTemp, 2, 1, tempC);
-            OeS_drawChar(x - 4, y, '-', 1, numColor);
-        }
-        OeS_drawChars(x, y, tempC, 1, numColor);
-        OeS_drawLChar(x + 14, y - 1, "℃", puncColor);
+        OeS_drawLChar(x + 9, y - 1, "℃", puncColor); // 绘制摄氏度符号
     }
-}
-
-void OeS_drawHumidity(int x, int y, int numColor, int puncColor)
-{
-    float humidityFloat;
-    char humidity[5];
-    humidityFloat = boardTH[1];
-    dtostrf(humidityFloat, 2, 1, humidity);
-
-    tft.drawRect(x, y - 1, 22, 8, backgroundColor); // 清屏
-    OeS_drawChars(x, y, humidity, 1, numColor);
-    OeS_drawChar(x + 14, y, '%', 1, puncColor);
 }
 
 bool OeS_getTime()
 {
-    unsigned long epochTime = timeClient.getEpochTime();
-    struct tm *ptm = gmtime((time_t *)&epochTime);
+    signed long long epochTime = timeClient.getEpochTime();
+    time_t Ptime = epochTime;
+    struct tm *ptm = gmtime(&Ptime);
 
-    if (ptm->tm_year == 1970)
+    if (ptm->tm_year <= 70)
     {
         return false;
     }
@@ -607,12 +553,11 @@ void OeS_beepSound_00(int beepTime, int beepFreq)
 {
     analogWriteFreq(beepFreq);
     analogWrite(BEEPPIN, 511);
-    analogWriteFreq(beepFreq);
     delay(beepTime);
     analogWrite(BEEPPIN, 0);
 }
 
-ICACHE_RAM_ATTR void OeS_touchInterrupt() // 触摸中断
+IRAM_ATTR void OeS_touchInterrupt() // 触摸中断
 {
     touchEN = true;
 }
@@ -750,8 +695,6 @@ void OeS_00_Setup()
     tft.fillScreen(backgroundColor);
     tft.setRotation(3); // tft屏幕初始化
 
-    Wire.begin(SDApin, SCLpin); // I2C初始化
-
     OeS_drawIcon(31, 48, uni_OeSLogo, CPSOeColor); // 显示项目Logo
 
     //----连接WiFi----
@@ -765,17 +708,18 @@ void OeS_00_Setup()
         OeS_Loading(43, 75, 0, 0);
         OeS_Loading(43, 75, 1, 0);
     }
-    timeClient.begin();
     OeS_Loading(43, 75, 0, 0);
+    timeClient.begin();
+    timeClient.setTimeOffset(3600 * TIMEAREA);
     if (!timeClient.update())
     {
-        OeS_Loading(43, 75, 1, 0);
         while (!timeClient.update())
         {
             delay(100);
             timeClient.update();
         }
     }
+    OeS_Loading(43, 75, 1, 0);
     OeS_getWeather();
     if (!OeS_getTime())
     {
@@ -797,22 +741,21 @@ void OeS_00_Setup()
 void OeS_01_Main(unsigned char mode01)
 {
     nowPage = 1;
-    if (mode01 == 2) // 更新温湿度
+    if (mode01 == 2) // 更新温度
     {
-        OeS_getBoradTH();
-        OeS_drawTemp(0, 47, 118, darkGrey, darkGrey);
-        OeS_drawHumidity(66, 108, darkGrey, darkGrey);
+        OeS_drawTemp(1, 52, 118, darkGrey, darkGrey);
     }
     else if (mode01 == 1) // 更新时间
     {
+        timeClient.update();
         OeS_getTime();
         OeS_drawTime(23, 37, 0, 0, 0, 2, true);
-        OeS_drawTime(23, 37, CPSOeColor, darkGrey, lightBlue, 2, false);
+        OeS_drawTime(23, 37, CPSOeColor, darkGrey, grey, 2, false);
     }
     else if (mode01 == 0) // 初始化
     {
         tft.fillScreen(backgroundColor);
-        if (!OeS_getTime()) // 重试获取时间
+        if (!OeS_getTime()) // 若获取时间失败则重试获取时间
         {
             timeClient.update();
             OeS_getTime();
@@ -827,14 +770,12 @@ void OeS_01_Main(unsigned char mode01)
         OeS_drawIcon(58, 71, uni_timerCircle, lightBlue); // 计时器圈
         OeS_drawChars(64, 83, "00:00", 1, darkGrey);      // 计时器数字
         tft.setSwapBytes(true);
-        tft.pushImage(10, 71, 42, 28, AmiYa); // 阿米娅
+        tft.pushImage(10, 71, 42, 28, AmiYa); // 绘制阿米娅
         tft.setSwapBytes(false);
 
-        OeS_drawTemp(1, 76, 118, darkGrey, darkGrey);
+        OeS_drawTemp(1, 52, 118, darkGrey, darkGrey);
         OeS_drawLChar(27, 118, "温", darkGrey);
         OeS_drawLChar(35, 118, "度", darkGrey);
-        OeS_drawLChar(48, 108, "湿", darkGrey);
-        OeS_drawLChar(56, 108, "度", darkGrey);
     }
 }
 
